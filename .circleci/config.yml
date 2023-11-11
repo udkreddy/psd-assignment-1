@@ -4,19 +4,42 @@ orbs:
   python: circleci/python@2.1.1
 
 workflows:
-  Testcases:
-    jobs:
-      - build-and-test
+    testcases:
+        jobs:
+            - build-and-test
+    deploy_to_docker:
+        jobs:
+            - build_and_push:
+                filters:
+                    branches:
+                        only: main # Build should be created only for main
 
 jobs: 
-  build-and-test:  # This is the name of the job, feel free to change it to better match what you're trying to do!
-    docker:
-      - image: cimg/python:3.10.5
-    steps:
-      - checkout
-      - python/install-packages:
-          pkg-manager: pip
-          # app-dir: ~/project/package-directory/  # If your requirements.txt isn't in the root directory.
-      - run:
-          name: Run tests
-          command: pytest test.py
+    build-and-test: 
+        docker:
+            - image: cimg/python:3.10.5
+        steps:
+            - checkout
+            - python/install-packages:
+                pkg-manager: pip
+                # app-dir: ~/project/package-directory/  # If your requirements.txt isn't in the root directory.
+            - run:
+                name: Run tests
+                command: pytest test.py
+
+    build_and_push:
+        docker:
+            - image: cimg/python:3.8
+        steps:
+            - checkout
+            - setup_remote_docker:
+                version: 19.03.13
+            - run:
+                name: Docker build
+                command: docker build -t $DOCKERHUB_USERNAME/myapp:${CIRCLE_SHA1} .
+            - run:
+                name: Authenticate with Docker Hub
+                command: echo "$DOCKERHUB_PASS" | docker login --username $DOCKERHUB_USERNAME --password-stdin
+            - run:
+                name: Push Docker Image to Docker Hub
+                command: docker push $DOCKERHUB_USERNAME/myapp:${CIRCLE_SHA1}
