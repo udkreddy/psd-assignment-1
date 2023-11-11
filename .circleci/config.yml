@@ -19,4 +19,4 @@ jobs:
           # app-dir: ~/project/package-directory/  # If your requirements.txt isn't in the root directory.
       - run:
           name: Run tests
-          command: pytest
+          command: pytest test.py
