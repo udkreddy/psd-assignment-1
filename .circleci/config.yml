@@ -43,3 +43,4 @@ jobs:
             - run:
                 name: Push Docker Image to Docker Hub
                 command: docker push $DOCKERHUB_USERNAME/assignment1:${CIRCLE_SHA1}
+ 
